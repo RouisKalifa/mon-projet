@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  flask-app:
+    build:
+      context: .
+      dockerfile: Dockerfile  # Utilise le Dockerfile dans le répertoire courant
+    ports:
+      - "8001:8000"  # Expose le port 8000 de l'app Flask sur le port 8001 de l'hôte
+    environment:
+      - MYSQL_HOST=db
+      - MYSQL_USER=root
+      - MYSQL_PASSWORD=mysecretpassword
+      - MYSQL_DB=mydatabase
+    depends_on:
+      - db  # Assure que Flask attend que la base de données soit prête
+    networks:
+      - app-network  # Connecte le service au réseau personnalisé
+
+  db:
+    image: mysql:5.7  # Utilise l'image officielle MySQL 5.7
+    container_name: mysql_db
+    environment:
+      - MYSQL_ROOT_PASSWORD=mysecretpassword
+      - MYSQL_DATABASE=mydatabase
+    ports:
+      - "3307:3306"  # Expose le port MySQL 3306 sur le port 3307 de l'hôte
+    volumes:
+      - mysql_data:/var/lib/mysql  # Volume persistant pour stocker les données MySQL
+    networks:
+      - app-network  # Connecte le service au réseau personnalisé
+
+volumes:
+  mysql_data:  # Volume pour la persistance des données MySQL
+
+networks:
+  app-network:
+    driver: bridge  # Crée un réseau isolé pour les services
+
